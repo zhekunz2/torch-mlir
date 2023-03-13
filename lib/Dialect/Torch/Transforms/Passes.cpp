@@ -63,6 +63,7 @@ void mlir::torch::Torch::createTorchFunctionToTorchBackendPipeline(
     OpPassManager &pm, const TorchLoweringPipelineOptions &options) {
   // Incorporate user annotations and remove signature Python-isms.
   pm.addPass(createAdjustCallingConventionsPass());
+  pm.addNestedPass<func::FuncOp>(createRewriteCustomOpPass());
   // Perform the bulk of lowering to the backend contract.
   // See the pass documentation for more information.
   pm.addPass(createLowerToBackendContractPass(

@@ -11295,3 +11295,68 @@ def Torch_QuantizedLinearOp : Torch_Op<"quantized.linear", [
   }];
 }
 
+def Torch_CustomDynamicPartitionOp : Torch_Op<"custom.dynamic_partition", [
+    AllowsTypeRefinement,
+    HasValueSemantics,
+    ReadOnly
+  ]> {
+  let summary = "Generated op for `custom::dynamic_partition : (Tensor, Tensor, int) -> (Tensor[])`";
+  let arguments = (ins
+    AnyTorchTensorType:$self,
+    AnyTorchTensorType:$partition,
+    Torch_IntType:$num_partitions
+  );
+  let results = (outs
+    AnyTorchListOfTensorType:$result
+  );
+  let hasCustomAssemblyFormat = 1;
+  let extraClassDefinition = [{
+    ParseResult CustomDynamicPartitionOp::parse(OpAsmParser &parser, OperationState &result) {
+      return parseDefaultTorchOp(parser, result, 3, 1);
+    }
+    void CustomDynamicPartitionOp::print(OpAsmPrinter &printer) {
+      printDefaultTorchOp(printer, *this, 3, 1);
+    }
+  }];
+}
+
+def Torch_CustomDynamicStitchOp : Torch_Op<"custom.dynamic_stitch", [
+    AllowsTypeRefinement,
+    HasValueSemantics,
+    ReadOnly
+  ]> {
+  let summary = "Generated op for `custom::dynamic_stitch : (Tensor, Tensor[], int[]) -> (Tensor)`";
+  let arguments = (ins
+    AnyTorchTensorType:$indices,
+    AnyTorchListOfTensorType:$data,
+    AnyTorchListOfTorchIntType:$output_shape
+  );
+  let results = (outs
+    AnyTorchTensorType:$result
+  );
+  let hasCustomAssemblyFormat = 1;
+  let extraClassDefinition = [{
+    ParseResult CustomDynamicStitchOp::parse(OpAsmParser &parser, OperationState &result) {
+      return parseDefaultTorchOp(parser, result, 3, 1);
+    }
+    void CustomDynamicStitchOp::print(OpAsmPrinter &printer) {
+      printDefaultTorchOp(printer, *this, 3, 1);
+    }
+  }];
+}
+
+def Torch_CustomOp : Torch_Op<"custom_op", [
+    AllowsTypeRefinement,
+    HasValueSemantics,
+    ReadOnly
+  ]> {
+  let summary = "Generated op for `torch::custom_op : (...) -> (...)`";
+  let arguments = (ins
+    Variadic<AnyTorchTensorType>:$operands
+  );
+  let results = (outs
+    Variadic<AnyTorchType>:$results
+  );
+  let assemblyFormat = "`(` $operands `)` attr-dict `:` qualified(type($operands)) `->` qualified(type($results))";
+}
+

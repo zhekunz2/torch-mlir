@@ -9,9 +9,14 @@
 
 #include "PassDetail.h"
 
+#include "CustomOpUtils.h"
 #include "SimplifyAbstractInterpCalculationsUtils.h"
+#include "mlir/IR/Builders.h"
+#include "mlir/IR/BuiltinAttributes.h"
 #include "mlir/IR/IRMapping.h"
+#include "mlir/IR/PatternMatch.h"
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
+#include "torch-mlir/Dialect/Torch/IR/TorchTypes.h"
 #include "torch-mlir/Dialect/Torch/Transforms/Passes.h"
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
 
@@ -366,6 +371,80 @@ class SimplifyShapeCalculationsPass
   void runOnOperation() override {
     MLIRContext *context = &getContext();
 
+    func::FuncOp func = getOperation();
+    func.getBody().walk([&](CustomOp op) {
+      std::string opName =
+          op->getAttrOfType<StringAttr>(getCustomOpName()).str();
+      if (opName == getDynamicPartitionName()) {
+        auto inputTy = op->getOperand(0).getType().cast<BaseTensorType>();
+        std::vector<int64_t> sizes;
+        for (size_t i = 0; i < inputTy.getSizes().size(); i++)
+          sizes.push_back(kUnknownSize);
+        ArrayRef<int64_t> dynamicSizes(sizes);
+        auto newResultType = inputTy.getWithSizesAndDtype(
+            dynamicSizes, inputTy.getOptionalDtype());
+        OpBuilder builder(context);
+        auto loc = op.getLoc();
+        for (size_t i = 0; i < op.getNumResults(); i++) {
+          auto originalResultType = op->getResult(i).getType();
+          op->getResult(i).setType(newResultType);
+          Value originalTypedValue;
+          for (OpOperand &use :
+               llvm::make_early_inc_range(op->getResult(0).getUses())) {
+            if (use.getOwner()
+                    ->hasTrait<
+                        mlir::torch::Torch::OpTrait::AllowsTypeRefinement>()) {
+              continue;
+            }
+            if (!originalTypedValue) {
+              builder.setInsertionPointAfter(op);
+              if (originalResultType.isa<BaseTensorType>()) {
+                originalTypedValue = builder.create<TensorStaticInfoCastOp>(
+                    loc, originalResultType, op.getResult(i));
+              }
+            }
+            use.set(originalTypedValue);
+          }
+        }
+      } else if (opName == getDynamicStitchName()) {
+        assert(op->getNumOperands() > 1 &&
+               "Dynamic stitch custom op expect more than 2 inputs");
+        auto dataTy = op->getOperand(1).getType().cast<BaseTensorType>();
+        auto attr = op->getAttrOfType<DictionaryAttr>(getCustomOpAttrName());
+        auto outputSizesAttr = attr.getAs<DenseIntElementsAttr>("output_shape");
+        assert(outputSizesAttr &&
+               "Dynamic stitch custom op output shape attribute not found.");
+        SmallVector<int64_t> outputSizes;
+        for (const auto &it :
+             llvm::enumerate(outputSizesAttr.getValues<int64_t>())) {
+          outputSizes.push_back(it.value());
+        }
+        auto resultType =
+            dataTy.getWithSizesAndDtype(outputSizes, dataTy.getOptionalDtype());
+        auto originalResultType = op->getResult(0).getType();
+        op->getResult(0).setType(resultType);
+
+        OpBuilder builder(context);
+        auto loc = op.getLoc();
+        Value originalTypedValue;
+        for (OpOperand &use :
+             llvm::make_early_inc_range(op->getResult(0).getUses())) {
+          if (use.getOwner()
+                  ->hasTrait<
+                      mlir::torch::Torch::OpTrait::AllowsTypeRefinement>()) {
+            continue;
+          }
+          if (!originalTypedValue) {
+            builder.setInsertionPointAfter(op);
+            if (originalResultType.isa<BaseTensorType>()) {
+              originalTypedValue = builder.create<TensorStaticInfoCastOp>(
+                  loc, originalResultType, op->getResult(0));
+            }
+          }
+          use.set(originalTypedValue);
+        }
+      }
+    });
     RewritePatternSet patterns(context);
     patterns.insert<FullyUnrollPrimLoopOp>(context);
     patterns.insert<AbstractlyInterpretListOpsWithinABlock>(context);
