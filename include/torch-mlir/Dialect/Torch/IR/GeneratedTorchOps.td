@@ -11359,4 +11359,3 @@ def Torch_CustomOp : Torch_Op<"custom_op", [
   );
   let assemblyFormat = "`(` $operands `)` attr-dict `:` qualified(type($operands)) `->` qualified(type($results))";
 }
-
