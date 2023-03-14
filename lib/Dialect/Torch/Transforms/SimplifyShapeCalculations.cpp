@@ -375,7 +375,7 @@ class SimplifyShapeCalculationsPass
     func.getBody().walk([&](CustomOp op) {
       std::string opName =
           op->getAttrOfType<StringAttr>(getCustomOpName()).str();
-      if (opName == getDynamicPartitionName()) {
+      if (opName == getDynamicPartitionCustomName()) {
         auto inputTy = op->getOperand(0).getType().cast<BaseTensorType>();
         std::vector<int64_t> sizes;
         for (size_t i = 0; i < inputTy.getSizes().size(); i++)
@@ -406,7 +406,7 @@ class SimplifyShapeCalculationsPass
             use.set(originalTypedValue);
           }
         }
-      } else if (opName == getDynamicStitchName()) {
+      } else if (opName == getDynamicStitchCustomName()) {
         assert(op->getNumOperands() > 1 &&
                "Dynamic stitch custom op expect more than 2 inputs");
         auto dataTy = op->getOperand(1).getType().cast<BaseTensorType>();

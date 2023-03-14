@@ -54,7 +54,7 @@ struct RewriteDynamicPartitionPattern
                                rewriter.getI64IntegerAttr(numPartitions));
     llvm::SmallVector<NamedAttribute> attrs;
     attrs.emplace_back(rewriter.getStringAttr(getCustomOpName()),
-                       rewriter.getStringAttr(getDynamicPartitionName()));
+                       rewriter.getStringAttr(getDynamicPartitionCustomName()));
     attrs.emplace_back(rewriter.getStringAttr(getCustomOpAttrName()),
                        rewriter.getDictionaryAttr(customOpAttrs));
 
@@ -89,7 +89,7 @@ struct RewriteDynamicStitchPattern
                                rewriter.getI64VectorAttr(outputShape));
     llvm::SmallVector<NamedAttribute> attrs;
     attrs.emplace_back(rewriter.getStringAttr(getCustomOpName()),
-                       rewriter.getStringAttr(getDynamicStitchName()));
+                       rewriter.getStringAttr(getDynamicStitchCustomName()));
     attrs.emplace_back(rewriter.getStringAttr(getCustomOpAttrName()),
                        rewriter.getDictionaryAttr(customOpAttrs));
 

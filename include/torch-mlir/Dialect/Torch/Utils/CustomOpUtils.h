@@ -18,7 +18,7 @@ constexpr StringRef getCustomOpAttrName() { return "custom_op_attrs"; }
 
 constexpr StringRef getCustomOpName() { return "custom_op_name"; }
 
-constexpr StringRef getDynamicPartitionName() { return "dynamic_partition"; }
+constexpr StringRef getDynamicPartitionCustomName() { return "dynamic_partition"; }
 
-constexpr StringRef getDynamicStitchName() { return "dynamic_stitch"; }
+constexpr StringRef getDynamicStitchCustomName() { return "dynamic_stitch"; }
 } // namespace mlir
