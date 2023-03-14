@@ -69,6 +69,7 @@
 #include "torch-mlir/Dialect/Torch/IR/TorchOps.h"
 #include "torch-mlir/Dialect/Torch/Transforms/Passes.h"
 #include "torch-mlir/Dialect/Torch/Utils/TorchUpstream.h"
+#include "torch-mlir/Dialect/Torch/Utils/CustomOpUtils.h"
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
 
 using namespace mlir;
@@ -1191,6 +1192,19 @@ void TypeAnalysis::visitOperation(Operation *op,
     }
     incorporateKnowledge(bucketize.getResult(), knowledge);
     return;
+  }
+
+  if (auto customOp = dyn_cast<CustomOp>(op)) {
+    std::string opName =
+          customOp->getAttrOfType<StringAttr>(getCustomOpName()).str();
+    if (opName == getDynamicPartitionCustomName()) {
+      for (size_t i = 0; i < op->getNumResults(); i++) {
+        incorporateKnowledge(op->getResult(i), operands[0]->getValue());
+      }
+      return;
+    } else if (opName == getDynamicStitchCustomName()) {
+      return incorporateKnowledge(op->getResult(0), operands[1]->getValue());
+    }
   }
 
   // Otherwise, this is an unknown operation, so reset the state.
