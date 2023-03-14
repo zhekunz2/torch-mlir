@@ -9,7 +9,6 @@
 
 #include "PassDetail.h"
 
-#include "CustomOpUtils.h"
 #include "SimplifyAbstractInterpCalculationsUtils.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinAttributes.h"
@@ -18,6 +17,7 @@
 #include "mlir/Transforms/GreedyPatternRewriteDriver.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchTypes.h"
 #include "torch-mlir/Dialect/Torch/Transforms/Passes.h"
+#include "torch-mlir/Dialect/Torch/Utils/CustomOpUtils.h"
 #include "torch-mlir/Dialect/Torch/Utils/Utils.h"
 
 using namespace mlir;
@@ -69,8 +69,8 @@ public:
       bvm.map(op.getRegion().front().getArgument(0), indices[i]);
       bvm.map(op.getRegion().front().getArguments().slice(1), iterArgs);
 
-      op.getRegion().cloneInto(afterBlock->getParent(), afterBlock->getIterator(),
-                            bvm);
+      op.getRegion().cloneInto(afterBlock->getParent(),
+                               afterBlock->getIterator(), bvm);
       Block *clonedBlock = bvm.lookup(&op.getRegion().front());
       rewriter.eraseOp(clonedBlock->getTerminator());
       blocksToMerge.push_back(clonedBlock);

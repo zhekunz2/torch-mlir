@@ -9,7 +9,6 @@
 
 #include "PassDetail.h"
 
-#include "CustomOpUtils.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/BuiltinDialect.h"
 #include "mlir/IR/BuiltinOps.h"
@@ -21,6 +20,7 @@
 #include "torch-mlir/Dialect/Torch/IR/TorchDialect.h"
 #include "torch-mlir/Dialect/Torch/IR/TorchOps.h"
 #include "torch-mlir/Dialect/Torch/Transforms/Passes.h"
+#include "torch-mlir/Dialect/Torch/Utils/CustomOpUtils.h"
 #include "llvm/ADT/SmallVector.h"
 #include <cstddef>
 
