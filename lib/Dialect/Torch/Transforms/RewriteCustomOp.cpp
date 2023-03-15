@@ -86,7 +86,13 @@ struct RewriteDynamicStitchPattern
                        rewriter.getDictionaryAttr(customOpAttrs));
 
     SmallVector<Value> operands;
-    operands.push_back(op.getIndices());
+    if (auto listConstruct =
+        dyn_cast<PrimListConstructOp>(op.getIndices().getDefiningOp())) {
+      for (size_t i = 0; i < listConstruct->getNumOperands(); i++)
+        operands.push_back(listConstruct->getOperand(i));
+    } else {
+      operands.push_back(op.getIndices());
+    }
     if (auto listConstruct =
             dyn_cast<PrimListConstructOp>(op.getData().getDefiningOp())) {
       for (size_t i = 0; i < listConstruct->getNumOperands(); i++)

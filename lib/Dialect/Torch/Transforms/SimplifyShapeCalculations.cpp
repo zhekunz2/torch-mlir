@@ -409,7 +409,7 @@ class SimplifyShapeCalculationsPass
       } else if (opName == getDynamicStitchCustomName()) {
         assert(op->getNumOperands() > 1 &&
                "Dynamic stitch custom op expect more than 2 inputs");
-        auto dataTy = op->getOperand(1).getType().cast<BaseTensorType>();
+        auto dataTy = op->getOperand(op.getNumOperands()/2).getType().cast<BaseTensorType>();
         auto indexTy = op->getOperand(0).getType().cast<BaseTensorType>();
         std::vector<int64_t> sizes;
         for (size_t i = 0;

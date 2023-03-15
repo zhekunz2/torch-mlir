@@ -1203,7 +1203,7 @@ void TypeAnalysis::visitOperation(Operation *op,
       }
       return;
     } else if (opName == getDynamicStitchCustomName()) {
-      return incorporateKnowledge(op->getResult(0), operands[1]->getValue());
+      return incorporateKnowledge(op->getResult(0), operands[operands.size()-1]->getValue());
     }
   }
 

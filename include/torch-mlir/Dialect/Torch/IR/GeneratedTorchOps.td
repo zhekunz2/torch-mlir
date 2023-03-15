@@ -11325,9 +11325,9 @@ def Torch_CustomDynamicStitchOp : Torch_Op<"custom.dynamic_stitch", [
     HasValueSemantics,
     ReadOnly
   ]> {
-  let summary = "Generated op for `custom::dynamic_stitch : (Tensor, Tensor[]) -> (Tensor)`";
+  let summary = "Generated op for `custom::dynamic_stitch : (Tensor[], Tensor[]) -> (Tensor)`";
   let arguments = (ins
-    AnyTorchTensorType:$indices,
+    AnyTorchListOfTensorType:$indices,
     AnyTorchListOfTensorType:$data
   );
   let results = (outs
