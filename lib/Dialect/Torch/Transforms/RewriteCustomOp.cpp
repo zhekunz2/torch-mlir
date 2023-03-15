@@ -78,12 +78,6 @@ struct RewriteDynamicStitchPattern
   LogicalResult
   matchAndRewrite(CustomDynamicStitchOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
-    SmallVector<int64_t> outputShape;
-    if (!matchPattern(op.getOutputShape(),
-                      m_TorchListOfConstantInts(outputShape)))
-      return rewriter.notifyMatchFailure(
-          op, "only support constant int output shape");
-
     std::vector<NamedAttribute> customOpAttrs;
     llvm::SmallVector<NamedAttribute> attrs;
     attrs.emplace_back(rewriter.getStringAttr(getCustomOpName()),
