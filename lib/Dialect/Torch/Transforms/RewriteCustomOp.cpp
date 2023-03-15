@@ -85,8 +85,6 @@ struct RewriteDynamicStitchPattern
           op, "only support constant int output shape");
 
     std::vector<NamedAttribute> customOpAttrs;
-    customOpAttrs.emplace_back(rewriter.getStringAttr("output_shape"),
-                               rewriter.getI64VectorAttr(outputShape));
     llvm::SmallVector<NamedAttribute> attrs;
     attrs.emplace_back(rewriter.getStringAttr(getCustomOpName()),
                        rewriter.getStringAttr(getDynamicStitchCustomName()));

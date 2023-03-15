@@ -410,15 +410,13 @@ class SimplifyShapeCalculationsPass
         assert(op->getNumOperands() > 1 &&
                "Dynamic stitch custom op expect more than 2 inputs");
         auto dataTy = op->getOperand(1).getType().cast<BaseTensorType>();
-        auto attr = op->getAttrOfType<DictionaryAttr>(getCustomOpAttrName());
-        auto outputSizesAttr = attr.getAs<DenseIntElementsAttr>("output_shape");
-        assert(outputSizesAttr &&
-               "Dynamic stitch custom op output shape attribute not found.");
-        SmallVector<int64_t> outputSizes;
-        for (const auto &it :
-             llvm::enumerate(outputSizesAttr.getValues<int64_t>())) {
-          outputSizes.push_back(it.value());
-        }
+        auto indexTy = op->getOperand(0).getType().cast<BaseTensorType>();
+        std::vector<int64_t> sizes;
+        for (size_t i = 0;
+             i < (dataTy.getSizes().size() - indexTy.getSizes().size() + 1);
+             i++)
+          sizes.push_back(kUnknownSize);
+        ArrayRef<int64_t> outputSizes(sizes);
         auto resultType =
             dataTy.getWithSizesAndDtype(outputSizes, dataTy.getOptionalDtype());
         auto originalResultType = op->getResult(0).getType();

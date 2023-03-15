@@ -11325,11 +11325,10 @@ def Torch_CustomDynamicStitchOp : Torch_Op<"custom.dynamic_stitch", [
     HasValueSemantics,
     ReadOnly
   ]> {
-  let summary = "Generated op for `custom::dynamic_stitch : (Tensor, Tensor[], int[]) -> (Tensor)`";
+  let summary = "Generated op for `custom::dynamic_stitch : (Tensor, Tensor[]) -> (Tensor)`";
   let arguments = (ins
     AnyTorchTensorType:$indices,
-    AnyTorchListOfTensorType:$data,
-    AnyTorchListOfTorchIntType:$output_shape
+    AnyTorchListOfTensorType:$data
   );
   let results = (outs
     AnyTorchTensorType:$result
@@ -11337,10 +11336,10 @@ def Torch_CustomDynamicStitchOp : Torch_Op<"custom.dynamic_stitch", [
   let hasCustomAssemblyFormat = 1;
   let extraClassDefinition = [{
     ParseResult CustomDynamicStitchOp::parse(OpAsmParser &parser, OperationState &result) {
-      return parseDefaultTorchOp(parser, result, 3, 1);
+      return parseDefaultTorchOp(parser, result, 2, 1);
     }
     void CustomDynamicStitchOp::print(OpAsmPrinter &printer) {
-      printDefaultTorchOp(printer, *this, 3, 1);
+      printDefaultTorchOp(printer, *this, 2, 1);
     }
   }];
 }
