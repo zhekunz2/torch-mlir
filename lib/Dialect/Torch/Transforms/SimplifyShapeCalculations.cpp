@@ -378,8 +378,9 @@ class SimplifyShapeCalculationsPass
       if (opName == getDynamicPartitionCustomName()) {
         auto inputTy = op->getOperand(0).getType().cast<BaseTensorType>();
         std::vector<int64_t> sizes;
-        for (size_t i = 0; i < inputTy.getSizes().size(); i++)
-          sizes.push_back(kUnknownSize);
+        sizes.push_back(kUnknownSize);
+        for (size_t i = 1; i < inputTy.getSizes().size(); i++)
+          sizes.push_back(inputTy.getSizes()[i]);
         ArrayRef<int64_t> dynamicSizes(sizes);
         auto newResultType = inputTy.getWithSizesAndDtype(
             dynamicSizes, inputTy.getOptionalDtype());
@@ -409,14 +410,26 @@ class SimplifyShapeCalculationsPass
       } else if (opName == getDynamicStitchCustomName()) {
         assert(op->getNumOperands() > 1 &&
                "Dynamic stitch custom op expect more than 2 inputs");
-        auto dataTy = op->getOperand(op.getNumOperands()/2).getType().cast<BaseTensorType>();
-        auto indexTy = op->getOperand(0).getType().cast<BaseTensorType>();
-        std::vector<int64_t> sizes;
-        for (size_t i = 0;
-             i < (dataTy.getSizes().size() - indexTy.getSizes().size() + 1);
-             i++)
-          sizes.push_back(kUnknownSize);
-        ArrayRef<int64_t> outputSizes(sizes);
+        auto dataTy = op->getOperand(op.getNumOperands() / 2)
+                          .getType()
+                          .cast<BaseTensorType>();
+        auto attr = op->getAttrOfType<DictionaryAttr>(getCustomOpAttrName());
+        auto outputSizesAttr = attr.getAs<DenseIntElementsAttr>("output_shape");
+        assert(outputSizesAttr &&
+               "Dynamic stitch custom op output shape attribute not found.");
+        SmallVector<int64_t> outputSizes;
+        for (const auto &it :
+             llvm::enumerate(outputSizesAttr.getValues<int64_t>())) {
+          outputSizes.push_back(it.value());
+        }
+        if (outputSizes.empty()) {
+          auto indexTy = op->getOperand(0).getType().cast<BaseTensorType>();
+          outputSizes.push_back(kUnknownSize);
+          for (size_t i = 0;
+               i < (dataTy.getSizes().size() - indexTy.getSizes().size()); i++)
+            outputSizes.push_back(
+                dataTy.getSizes()[i + indexTy.getSizes().size()]);
+        }
         auto resultType =
             dataTy.getWithSizesAndDtype(outputSizes, dataTy.getOptionalDtype());
         auto originalResultType = op->getResult(0).getType();

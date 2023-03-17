@@ -79,6 +79,13 @@ struct RewriteDynamicStitchPattern
   matchAndRewrite(CustomDynamicStitchOp op, OpAdaptor adaptor,
                   ConversionPatternRewriter &rewriter) const override {
     std::vector<NamedAttribute> customOpAttrs;
+    SmallVector<int64_t> outputShape;
+    if (!matchPattern(op.getOutputShape(),
+                      m_TorchListOfConstantInts(outputShape)))
+      return rewriter.notifyMatchFailure(
+          op, "only support constant int output shape");
+    customOpAttrs.emplace_back(rewriter.getStringAttr("output_shape"),
+                               rewriter.getI64VectorAttr(outputShape));
     llvm::SmallVector<NamedAttribute> attrs;
     attrs.emplace_back(rewriter.getStringAttr(getCustomOpName()),
                        rewriter.getStringAttr(getDynamicStitchCustomName()));
@@ -87,7 +94,7 @@ struct RewriteDynamicStitchPattern
 
     SmallVector<Value> operands;
     if (auto listConstruct =
-        dyn_cast<PrimListConstructOp>(op.getIndices().getDefiningOp())) {
+            dyn_cast<PrimListConstructOp>(op.getIndices().getDefiningOp())) {
       for (size_t i = 0; i < listConstruct->getNumOperands(); i++)
         operands.push_back(listConstruct->getOperand(i));
     } else {
