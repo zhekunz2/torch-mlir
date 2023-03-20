@@ -85,8 +85,6 @@ void createTorchDtypeRefinementPipeline(OpPassManager &pm);
 
 std::unique_ptr<OperationPass<ModuleOp>> createAdjustCallingConventionsPass();
 
-std::unique_ptr<OperationPass<func::FuncOp>> createRewriteCustomOpPass();
-
 std::unique_ptr<OperationPass<func::FuncOp>> createRefineTypesPass();
 
 std::unique_ptr<OperationPass<ModuleOp>> createInlineGlobalSlotsPass();

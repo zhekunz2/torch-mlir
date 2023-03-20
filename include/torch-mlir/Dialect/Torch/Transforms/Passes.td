@@ -126,14 +126,6 @@ def AdjustCallingConventions
   }];
 }
 
-def RewriteCustomOp : Pass<"torch-rewrite-custom-op", "func::FuncOp"> {
-  let summary = "Rewrite torch custom ops before refine types and shapes";
-  let constructor = "mlir::torch::Torch::createRewriteCustomOpPass()";
-  let description = [{
-    Rewrite custom torch operations to torch.custom_op.
-  }];
-}
-
 def RefineTypes : Pass<"torch-refine-types", "func::FuncOp"> {
   let summary = "Refine types";
   let constructor = "mlir::torch::Torch::createRefineTypesPass()";
